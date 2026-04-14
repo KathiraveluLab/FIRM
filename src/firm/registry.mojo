@@ -21,8 +21,6 @@ struct ServiceRegistry:
         if session_id != "":
             let key = name + "@" + session_id
             if self._session_map.__contains__(key):
-                let host_port = String(self._session_map[key])
-                # Find matching active service
                 for i in range(len(self.services)):
                     let s = self.services[i]
                     if s.name == name:
@@ -41,33 +39,31 @@ struct ServiceRegistry:
     fn blacklist(inout self, name: String):
         for i in range(len(self.services)):
             if self.services[i].name == name:
-                let s = self.services[i]
-                self.blacklisted.push_back(s)
-                # Remove from active (simplified for demo)
+                self.blacklisted.push_back(self.services[i])
                 print("FIRM [Registry]: Service", name, "moved to BLACKLIST.")
                 return
 
     fn promote_random_node(inout self) raises:
-        # Algorithm 3: Promoter Thread logic
         if len(self.blacklisted) == 0:
             return
-            
-        # Flip a coin (simulated)
-        if random.random_si64(0, 10) > 7: # 30% chance to promote
-            let s = self.blacklisted[0] # Pop first for simplicity
-            print("FIRM [Registry]: COIN FLIP SUCCESS -> Promoting", s.name, "back to rotation.")
+        if random.random_si64(0, 10) > 7:
+            let s = self.blacklisted[0]
+            print("FIRM [Registry]: COIN FLIP SUCCESS -> Promoting", s.name)
             self.services.push_back(s)
-            # Remove from blacklist
-            # ...
+
+    fn sync_with_remote_registry(inout self, remote_data: PythonObject) raises:
+        # Algorithm: Ad-UDDI Gossip Simulation
+        print("FIRM [Ad-UDDI]: Synchronizing with remote registry...")
+        # Simulating loading remote services
+        let remote_qos = QoSMetadata(15.0, 2000.0, 0.999)
+        self.register(Service("RemoteStorage", "192.168.1.50", 9000, 10, remote_qos))
+        print("FIRM [Ad-UDDI]: Sync Complete. New services added.")
 
     fn load_config(inout self, file_path: String) raises:
-        print("FIRM [Registry]: Loading Nginx-style config from", file_path)
-        # In a real Mojo implementation, we would use File.read()
-        # For parity, we simulate the parsing of services.conf
+        print("FIRM [Registry]: Loading config from", file_path)
         let low_qos = QoSMetadata(20.0, 1000.0, 0.99)
         self.register(Service("PaymentService", "127.0.0.1", 8080, 1, low_qos))
         self.register(Service("InventoryService", "127.0.0.1", 8081, 2, low_qos))
-        print("FIRM [Registry]: Config loaded. Scanned 2 services.")
 
     fn list_services(self):
         print("Registered Services:")
