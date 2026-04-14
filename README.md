@@ -1,6 +1,6 @@
 # FIRM: High-Performance Service Composition Framework
 
-FIRM (Find, Invoke, Return, Manage) is a research-grade framework implemented in Mojo designed for high-performance service composition in distributed environments. This implementation achieves 100% research parity with the original FIRM paper, leveraging Mojo’s FFI and system-level performance.
+FIRM (Find, Invoke, Return, Manage) is a research-grade framework implemented in Mojo designed for high-performance service composition in distributed environments. FIRM leverages Mojo’s FFI and system-level performance.
 
 ## Key Features
 
