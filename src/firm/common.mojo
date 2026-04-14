@@ -12,12 +12,16 @@ struct QoSMetadata:
 
 struct Service:
     var name: String
-    var endpoint: String
+    var host: String
+    var port: Int
+    var amqp_channel: Int
     var qos: QoSMetadata
 
-    fn __init__(inout self, name: String, endpoint: String, qos: QoSMetadata):
+    fn __init__(inout self, name: String, host: String, port: Int, amqp_channel: Int, qos: QoSMetadata):
         self.name = name
-        self.endpoint = endpoint
+        self.host = host
+        self.port = port
+        self.amqp_channel = amqp_channel
         self.qos = qos
 
 struct Node:
