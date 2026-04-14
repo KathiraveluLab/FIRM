@@ -16,32 +16,32 @@ struct CompositionStep:
 
 struct ServiceComposition:
     var steps: DynamicVector[CompositionStep]
-    var cache: MemoCache
     
     fn __init__(inout self) raises:
         self.steps = DynamicVector[CompositionStep]()
-        self.cache = MemoCache()
 
     fn add_step(inout self, step: CompositionStep):
         self.steps.push_back(step)
 
-    fn execute(inout self, inout registry: ServiceRegistry, invoker: ServiceInvoker, session_id: String = "anon_session") raises:
+    fn execute(inout self, inout registry: ServiceRegistry, invoker: ServiceInvoker, inout cache: MemoCache, session_id: String = "anon_session") raises -> InvocationResult:
         print("FIRM [Composition]: Starting execution for session", session_id)
+        
+        var aggregated_payload = String("Result Set: ")
+        var total_latency = 0.0
         
         for i in range(len(self.steps)):
             let step = self.steps[i]
             print("FIRM [Composition]: Step", i+1, "dispatched.")
             
             for j in range(len(step.services)):
-                # Here we simulate the logic where we'd lookup a service by name
-                # and use its host/port.
                 let service_name = step.services[j].name
-                let payload = "COMPOSITION_DATA_CHUNK"
+                let payload = "DATA"
                 
-                # 1. Check Cache (Memoization)
-                let cached_val = self.cache.get(service_name, payload)
+                # 1. Check Global Cache (Memoization)
+                let cached_val = cache.get(service_name, payload)
                 if cached_val != None:
-                    print("FIRM [Memo]: Cache Hit for", service_name, "-> SKIPPING Invocation")
+                    print("FIRM [Memo]: Global Cache Hit for", service_name, "-> REUSING RESULT")
+                    aggregated_payload += String(cached_val) + "; "
                     continue
                 
                 # 2. Get Service from Registry with Session Affinity
@@ -51,7 +51,10 @@ struct ServiceComposition:
                 let result = invoker.invoke(actual_service, payload)
                 print("FIRM [Step", i+1, "]:", service_name, "returned result.")
                 
-                # 4. Update Cache
-                self.cache.set(service_name, payload, result.payload)
+                # 4. Update Global Cache & Aggregate
+                aggregated_payload += result.payload + "; "
+                total_latency += result.latency
+                cache.set(service_name, payload, result.payload)
                 
         print("FIRM [Composition]: Workflow finished.")
+        return InvocationResult(aggregated_payload, total_latency, 200, True)
