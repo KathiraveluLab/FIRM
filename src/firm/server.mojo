@@ -20,37 +20,31 @@ struct FIRMServer:
             print("Failed to create server socket")
             return
             
-        # 2. Bind (Simplified for simulation/mock)
-        print("FIRM [Libc]: Server listening on port", self.port)
+        print("FIRM [Server]: Socket created, fd =", fd)
         
-        # 3. Listen
+        # 2. Bind and Listen (Simplified libc interface for mock)
+        print("FIRM [Server]: Listening on port", self.port)
         _ = external_call["listen", Int32, Int32, Int32](fd, 5)
         
-        # 4. Accept loop simulation
-        print("FIRM [Server]: Entering accept loop...")
+        # 3. Simulated Accept & Receive Loop
+        # In a real Mojo environment, we would use libc.accept and libc.recv
+        # For the mock server behavior, we simulate a request processing:
         
-        while True:
-            # Real Mojo would use libc.accept
-            # let client_fd = external_call["accept", Int32, Int32, Pointer[None], Pointer[Int32]](fd, 0, 0)
-            
-            # For the mock server, we'll simulate receiving a frame
-            print("FIRM [Server]: Connection accepted. Processing AMQP-lite frame...")
-            
-            # Mock receiving and unpacking
-            let rx_frame = AMQPLiteFrame(1, 100, "REQUEST: Composition_Alpha")
-            print("FIRM [Server]: Received Request ->", rx_frame.payload)
-            
-            # 5. Process and Respond
-            let response_text = "FIRM_ACK: Composition_Alpha_Executed"
-            let tx_frame = AMQPLiteFrame(3, rx_frame.channel, response_text)
-            let response_buffer = tx_frame.pack()
-            
-            # Send response (libc.send)
-            # _ = external_call["send", Int, Int32, Pointer[UInt8], Int, Int32](client_fd, response_buffer, 12 + len(response_text), 0)
-            
-            print("FIRM [Server]: Response sent over AMQP-lite channel", rx_frame.channel)
-            
-            # Break loop for mock demonstration
-            break
-
+        print("FIRM [Server]: Waiting for AMQP-lite frames...")
+        
+        # Mock receiving a frame
+        let rx_frame = AMQPLiteFrame(1, 100, "REQUEST: Composition_Action_1")
+        print("FIRM [Server]: Received Request ->", rx_frame.payload)
+        
+        # Simulate processing time
+        time.sleep(0.05)
+        
+        # 4. Respond with AMQP-lite Frame
+        let response_text = "FIRM_ACK: Action_Executed"
+        let tx_frame = AMQPLiteFrame(3, rx_frame.channel, response_text)
+        let response_buffer = tx_frame.pack()
+        
+        print("FIRM [Server]: Dispatching response on channel", rx_frame.channel)
+        
         _ = external_call["close", Int32, Int32](fd)
+        print("FIRM [Server]: Server shutting down.")

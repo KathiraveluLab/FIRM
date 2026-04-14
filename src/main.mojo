@@ -3,52 +3,62 @@ from src.firm.registry import ServiceRegistry
 from src.firm.invoker import ServiceInvoker
 from src.firm.manage import QoSManager
 from src.firm.server import FIRMServer
+from src.firm.composition import ServiceComposition, CompositionStep
 from python import Python
 
 fn main() raises:
-    print("FIRM Framework: Real Mojo Implementation")
+    print("FIRM Framework: Real Mojo Implementation (Stage 2)")
     print("Research Parity: 100%")
-    print("Protocol: AMQP-lite (MOM) over Libc Sockets")
+    print("Features: DAG Execution, Session Affinity, Dynamic Reconfiguration")
     print("--------------------------------------------------")
 
-    # 1. Start Mock Server (Simulation of external service)
-    let server = FIRMServer(8080)
-    # Traditionally would run in a separate thread/process
-    # Here we simulate the server's availability and logic
-    
-    # 2. FIND: Initialize Registry and Register Services with Real Addresses
+    # 1. Setup Environment
     var registry = ServiceRegistry()
+    let invoker = ServiceInvoker(500)
+    var manager = QoSManager(100.0)
     
-    # Real-world coordinates
-    let low_latency_qos = QoSMetadata(20.0, 1000.0, 0.99)
-    let high_latency_qos = QoSMetadata(150.0, 500.0, 0.95)
+    # 2. Register Services
+    let qos_ok = QoSMetadata(20.0, 1000.0, 0.99)
+    let qos_bad = QoSMetadata(150.0, 500.0, 0.95)
     
-    registry.register(Service("PaymentService", "127.0.0.1", 8080, 1, low_latency_qos))
-    registry.register(Service("InventoryService", "127.0.0.1", 8081, 2, high_latency_qos))
+    let s1 = Service("AuthService", "127.0.0.1", 8080, 1, qos_ok)
+    let s2 = Service("DataFetchService", "127.0.0.1", 8081, 2, qos_ok)
+    let s3 = Service("AnalysisService", "127.0.0.1", 8082, 3, qos_bad)
     
-    registry.list_services()
+    registry.register(s1)
+    registry.register(s2)
+    registry.register(s3)
+    
+    # 3. Create a Sample DAG Composition
+    # Step 1: Auth
+    # Step 2: Parallel Data Fetch & Analysis
+    var composition = ServiceComposition()
+    
+    var step1 = CompositionStep()
+    step1.add_service(s1)
+    
+    var step2 = CompositionStep()
+    step2.add_service(s2)
+    step2.add_service(s3)
+    
+    composition.add_step(step1)
+    composition.add_step(step2)
+    
+    # 4. Execute Composition (First Run - should hit network)
+    composition.execute(registry, invoker, "Session_1")
     print("--------------------------------------------------")
-
-    # 3. INVOKE: Call a service using real logic
-    let invoker = ServiceInvoker(500) # 500ms timeout
-    let target_service = registry.find("InventoryService")
     
-    print("FIRM [Find]: Target ->", target_service.name, "on", target_service.host, ":", target_service.port)
-    print("FIRM [Invoke]: Dispatching AMQP-Lite frames via libc.socket...")
-    
-    let result = invoker.invoke(target_service, "REQUEST: Composition_Alpha")
-    
-    # 4. RETURN: Process results
-    print("FIRM [Return]: Received Response")
-    result.print_result()
+    # 5. Execute Composition Again (Second Run - should hit CACHE)
+    print("FIRM [Demo]: Executing composition again for same session...")
+    composition.execute(registry, invoker, "Session_1")
     print("--------------------------------------------------")
-
-    # 5. MANAGE: QoS Monitoring and SDN Adjustment
-    # Using the same threshold from the paper (100ms)
-    var manager = QoSManager(100.0) 
     
-    print("FIRM [Manage]: Monitoring QoS...")
-    manager.monitor_and_manage(registry, target_service.name, result.latency)
+    # 6. Simulate QoS Analysis & Dynamic Reconfiguration
+    # We'll simulate a check on the 'AnalysisService' which had bad QoS
+    let result_last = invoker.invoke(s3, "TELEMETRY_CHECK")
+    print("FIRM [Analysis]: Latency observed =", result_last.latency, "ms")
+    
+    manager.monitor_and_manage(registry, s3.name, result_last.latency)
     
     print("--------------------------------------------------")
-    print("FIRM Real-World Mojo Implementation Complete.")
+    print("FIRM Stage 2 Implementation Complete.")

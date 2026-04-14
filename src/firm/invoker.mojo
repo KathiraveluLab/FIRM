@@ -24,7 +24,7 @@ struct ServiceInvoker:
         let start_time = time.now()
         
         # 3. Connection simulation (Real Mojo would use libc.connect with sockaddr_in)
-        # For research parity, we assume the connection is managed by the SDN bridge
+        # Note: We represent the intent to connect to service.host:service.port
         print("FIRM [Libc]: Socket", fd, "connecting to", service.host, ":", service.port)
         
         # 4. AMQP-lite Framing

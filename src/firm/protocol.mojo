@@ -1,5 +1,4 @@
 from memory import Pointer
-from utils.vector import DynamicVector
 
 struct AMQPLiteFrame:
     var type: UInt8
@@ -48,7 +47,8 @@ struct AMQPLiteFrame:
         let channel = (UInt16(buffer.load(1)) << 8) | UInt16(buffer.load(2))
         let size = (UInt32(buffer.load(3)) << 24) | (UInt32(buffer.load(4)) << 16) | (UInt32(buffer.load(5)) << 8) | UInt32(buffer.load(6))
         
-        # Extract payload string simulation (in real Mojo we'd have a helper for this)
-        var p = String("Decoded AMQP Payload")
+        # In a production environment, we'd copy the bytes into a String. 
+        # For this demonstration, we return a mock string.
+        let p = String("Decoded AMQP Payload")
             
         return AMQPLiteFrame(type, channel, p)
