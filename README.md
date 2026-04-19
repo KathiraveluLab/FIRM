@@ -60,3 +60,9 @@ service PaymentService {
 
 ## Research Context
 This implementation provides the functional building blocks for the FIRM framework, enabling researchers to validate service composition strategies in a high-performance, low-latency environment.
+
+## Citation
+
+If you use this work in your research, please cite the following publication:
+
+* Kathiravelu, P., Grbac, T.G. and Veiga, L., 2016, May. **A FIRM approach for software-defined service composition.** In 2016 39th International Convention on Information and Communication Technology, Electronics and Microelectronics (MIPRO) (pp. 565-570). IEEE.
