@@ -5,7 +5,7 @@ from src.firm.manage import QoSManager
 from src.firm.composition import ServiceComposition, CompositionStep
 from src.firm.memo import MemoCache
 from src.firm.mapreduce import MapReduceJob, MapReduceCoordinator
-from python import Python
+from std.python import Python
 
 fn main() raises:
     print("FIRM Framework: 100% Research Parity (Mojo Implementation)")
@@ -14,7 +14,7 @@ fn main() raises:
 
     # 1. Setup Framework
     var registry = ServiceRegistry()
-    let invoker = ServiceInvoker(500)
+    var invoker = ServiceInvoker(500)
     var manager = QoSManager(100.0)
     var global_cache = MemoCache()
     
@@ -32,7 +32,7 @@ fn main() raises:
     sdw_comp.add_step(common_step)
     sdw_comp.add_step(common_step) # Repeated service triggers dicycle logic
     
-    let result_sdw = sdw_comp.execute(registry, invoker, global_cache, "Session_SDW")
+    var result_sdw = sdw_comp.execute(registry, invoker, global_cache, "Session_SDW")
     print("FIRM [SDW Result]:", result_sdw.payload)
     print("--------------------------------------------------")
     
@@ -42,14 +42,14 @@ fn main() raises:
     mr_coordinator.add_worker(registry.find("PaymentService"))
     mr_coordinator.add_worker(registry.find("InventoryService"))
     
-    let job = MapReduceJob("DailyTransactions", 3, 1)
-    let mr_result = mr_coordinator.run_job(job)
+    var job = MapReduceJob("DailyTransactions", 3, 1)
+    var mr_result = mr_coordinator.run_job(job)
     print("FIRM [MapReduce Result]:", mr_result.payload)
     print("--------------------------------------------------")
     
     # 5. Global Memoization verification
     print(">>> Verifying Cross-Session Global Memoization...")
-    let result_reuse = sdw_comp.execute(registry, invoker, global_cache, "Session_NEW")
+    var result_reuse = sdw_comp.execute(registry, invoker, global_cache, "Session_NEW")
     print("FIRM [Session_NEW]: Calculation reused from Session_SDW.")
     
     print("--------------------------------------------------")

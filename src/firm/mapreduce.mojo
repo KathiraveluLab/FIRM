@@ -1,28 +1,33 @@
-from utils.vector import DynamicVector
+from std.collections import List
 from .common import Service
 from .invoker import ServiceInvoker
 from .results import InvocationResult
 
-struct MapReduceJob:
+struct MapReduceJob(ImplicitlyCopyable):
     var name: String
     var num_maps: Int
     var num_reduces: Int
 
-    fn __init__(inout self, name: String, maps: Int, reduces: Int):
+    fn __init__(out self: Self, name: String, maps: Int, reduces: Int):
         self.name = name
         self.num_maps = maps
         self.num_reduces = reduces
 
+    fn __copyinit__(out self: Self, *, copy: Self):
+        self.name = copy.name
+        self.num_maps = copy.num_maps
+        self.num_reduces = copy.num_reduces
+
 struct MapReduceCoordinator:
     var invoker: ServiceInvoker
-    var workers: DynamicVector[Service]
+    var workers: List[Service]
 
-    fn __init__(inout self, invoker: ServiceInvoker):
+    fn __init__(out self: Self, invoker: ServiceInvoker):
         self.invoker = invoker
-        self.workers = DynamicVector[Service]()
+        self.workers = List[Service]()
 
-    fn add_worker(inout self, worker: Service):
-        self.workers.push_back(worker)
+    fn add_worker(mut self, worker: Service):
+        self.workers.append(worker)
 
     fn run_job(self, job: MapReduceJob) raises -> InvocationResult:
         print("FIRM [MapReduce]: Initializing Job -", job.name)
@@ -34,7 +39,7 @@ struct MapReduceCoordinator:
         # 1. Map Phase
         print("FIRM [MapReduce]: Starting MAP phase...")
         for i in range(job.num_maps):
-            let worker = self.workers[i % len(self.workers)]
+            var worker = self.workers[i % len(self.workers)]
             _ = self.invoker.invoke(worker, "MAP_TASK_" + String(i))
         
         print("FIRM [MapReduce]: Map phase complete.")
@@ -42,7 +47,7 @@ struct MapReduceCoordinator:
         # 2. Shuffle & Reduce Phase
         print("FIRM [MapReduce]: Starting REDUCE phase...")
         for i in range(job.num_reduces):
-            let worker = self.workers[i % len(self.workers)]
+            var worker = self.workers[i % len(self.workers)]
             _ = self.invoker.invoke(worker, "REDUCE_TASK_" + String(i))
 
         print("FIRM [MapReduce]: Job", job.name, "COMPLETED.")

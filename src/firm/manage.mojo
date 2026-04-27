@@ -1,15 +1,18 @@
 from .registry import ServiceRegistry
-from .sdn_bridge import SDNBridge
+from std.python import Python, PythonObject
 
 struct QoSManager:
     var latency_limit: Float64
-    var sdn: SDNBridge
+    var sdn: PythonObject
 
-    fn __init__(inout self, limit: Float64):
+    fn __init__(out self: Self, limit: Float64) raises:
         self.latency_limit = limit
-        self.sdn = SDNBridge()
+        # Importing sdn_bridge.py as a Python module
+        var sys = Python.import_module("sys")
+        sys.path.append("src/firm")
+        self.sdn = Python.import_module("sdn_bridge").SDNBridge()
 
-    fn monitor_and_manage(inout self, inout registry: ServiceRegistry, service_name: String, current_latency: Float64) raises:
+    fn monitor_and_manage(mut self, mut registry: ServiceRegistry, service_name: String, current_latency: Float64) raises:
         print("FIRM [Manage]: Monitoring", service_name, "- Latency:", current_latency, "ms")
         
         # 1. Check for violation (Algorithm 2)
@@ -20,7 +23,7 @@ struct QoSManager:
             registry.blacklist(service_name)
             
             # 3. Trigger SDN Reconfiguration
-            self.sdn.reconfigure_node(service_name, "LOW_PRIORITY")
+            _ = self.sdn.reconfigure_node(service_name, "LOW_PRIORITY")
         
         # 4. Periodically Promote Nodes (Algorithm 3: Promoter Thread)
         registry.promote_random_node()

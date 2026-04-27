@@ -49,12 +49,12 @@ pixi shell
 ### Running the Demonstration
 Execute the main framework demonstration:
 ```bash
-pixi run mojo src/main.mojo
+pixi run mojo main.mojo
 ```
 
 ### Running Benchmarks
 ```bash
-pixi run mojo src/benchmark.mojo
+pixi run mojo benchmark.mojo
 ```
 
 ### Configuration

@@ -1,7 +1,7 @@
 import requests
 import json
 
-class RyuSDNBridge:
+class SDNBridge:
     def __init__(self, controller_url="http://localhost:8080"):
         self.controller_url = controller_url
 
@@ -23,5 +23,9 @@ class RyuSDNBridge:
         # Logic to send FlowMod messages via RYU REST API
         return True
 
+    def reconfigure_node(self, service_id, priority):
+        """Alias for update_flow_qos to match FIRM manager nomenclature."""
+        return self.update_flow_qos(service_id, priority)
+
 def get_bridge(url):
-    return RyuSDNBridge(url)
+    return SDNBridge(url)

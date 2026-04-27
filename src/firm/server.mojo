@@ -1,21 +1,22 @@
 from memory import Pointer
+from std.ffi import external_call
 from .protocol import AMQPLiteFrame
 from .results import InvocationResult
-import time
+import std.time as time
 
 # POSIX Constants
-alias AF_INET: Int32 = 2
-alias SOCK_STREAM: Int32 = 1
+comptime AF_INET: Int32 = 2
+comptime SOCK_STREAM: Int32 = 1
 
 struct FIRMServer:
     var port: Int
 
-    fn __init__(inout self, port: Int):
+    fn __init__(out self: Self, port: Int):
         self.port = port
 
     fn start(self) raises:
         # 1. Create Socket
-        let fd = external_call["socket", Int32, Int32, Int32, Int32](AF_INET, SOCK_STREAM, 0)
+        var fd = external_call["socket", Int32, Int32, Int32, Int32](AF_INET, SOCK_STREAM, 0)
         if fd < 0:
             print("Failed to create server socket")
             return
@@ -33,16 +34,16 @@ struct FIRMServer:
         print("FIRM [Server]: Waiting for AMQP-lite frames...")
         
         # Mock receiving a frame
-        let rx_frame = AMQPLiteFrame(1, 100, "REQUEST: Composition_Action_1")
+        var rx_frame = AMQPLiteFrame(1, 100, "REQUEST: Composition_Action_1")
         print("FIRM [Server]: Received Request ->", rx_frame.payload)
         
         # Simulate processing time
         time.sleep(0.05)
         
         # 4. Respond with AMQP-lite Frame
-        let response_text = "FIRM_ACK: Action_Executed"
-        let tx_frame = AMQPLiteFrame(3, rx_frame.channel, response_text)
-        let response_buffer = tx_frame.pack()
+        var response_text = "FIRM_ACK: Action_Executed"
+        var tx_frame = AMQPLiteFrame(3, rx_frame.channel, response_text)
+        var response_buffer = tx_frame.pack()
         
         print("FIRM [Server]: Dispatching response on channel", rx_frame.channel)
         

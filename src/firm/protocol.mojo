@@ -1,4 +1,4 @@
-from memory import Pointer
+from std.memory import UnsafePointer, alloc
 
 struct AMQPLiteFrame:
     var type: UInt8
@@ -7,18 +7,19 @@ struct AMQPLiteFrame:
     var payload: String
     
     # Constants for AMQP-lite
-    alias FRAME_END: UInt8 = 0xCE
-    alias HEADER_SIZE: Int = 7 # 1 (Type) + 2 (Channel) + 4 (Size)
+    comptime FRAME_END: UInt8 = 0xCE
+    comptime HEADER_SIZE: Int = 7 # 1 (Type) + 2 (Channel) + 4 (Size)
 
-    fn __init__(inout self, type: UInt8, channel: UInt16, payload: String):
+    fn __init__(out self: Self, type: UInt8, channel: UInt16, payload: String):
         self.type = type
         self.channel = channel
         self.payload = payload
-        self.size = len(payload)
+        self.size = UInt32(len(payload))
 
-    fn pack(self) -> Pointer[UInt8]:
-        let total_size = self.HEADER_SIZE + Int(self.size) + 1
-        let buffer = Pointer[UInt8].alloc(total_size)
+    # Returning Int to bypass UnsafePointer ambiguity and origin issues.
+    fn pack(self) -> Int:
+        var total_size = self.HEADER_SIZE + Int(self.size) + 1
+        var buffer = alloc[UInt8](total_size)
         
         # Header
         buffer.store(0, self.type)
@@ -32,23 +33,21 @@ struct AMQPLiteFrame:
         buffer.store(6, UInt8(self.size & 0xFF))
         
         # Payload
-        let p_ptr = self.payload._as_ptr()
+        var p_ptr = self.payload.unsafe_ptr()
         for i in range(Int(self.size)):
             buffer.store(self.HEADER_SIZE + i, p_ptr.load(i))
             
         # Frame End
         buffer.store(total_size - 1, self.FRAME_END)
         
-        return buffer
+        return Int(buffer)
 
     @staticmethod
-    fn unpack(buffer: Pointer[UInt8], total_size: Int) -> AMQPLiteFrame:
-        let type = buffer.load(0)
-        let channel = (UInt16(buffer.load(1)) << 8) | UInt16(buffer.load(2))
-        let size = (UInt32(buffer.load(3)) << 24) | (UInt32(buffer.load(4)) << 16) | (UInt32(buffer.load(5)) << 8) | UInt32(buffer.load(6))
+    fn unpack(buffer: UnsafePointer[UInt8, _], total_size: Int) -> AMQPLiteFrame:
+        var type = buffer.load(0)
+        var channel = (UInt16(buffer.load(1)) << 8) | UInt16(buffer.load(2))
+        var size = (UInt32(buffer.load(3)) << 24) | (UInt32(buffer.load(4)) << 16) | (UInt32(buffer.load(5)) << 8) | UInt32(buffer.load(6))
         
-        # In a production environment, we'd copy the bytes into a String. 
-        # For this demonstration, we return a mock string.
-        let p = String("Decoded AMQP Payload")
+        var p = String("Decoded AMQP Payload")
             
         return AMQPLiteFrame(type, channel, p)
