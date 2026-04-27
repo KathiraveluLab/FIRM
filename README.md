@@ -34,18 +34,27 @@ graph TD
 ## Usage
 
 ### Installation
-Ensure you have the Mojo SDK installed.
+Install the Mojo SDK via the provided setup script:
+
+```bash
+bash setup.sh
+```
+
+This installs [Pixi](https://pixi.sh), initializes the project, adds the Modular and conda-forge channels, and installs Mojo. After setup, enter the environment with:
+
+```bash
+pixi shell
+```
 
 ### Running the Demonstration
 Execute the main framework demonstration:
 ```bash
-mojo src/main.mojo
+pixi run mojo src/main.mojo
 ```
 
 ### Running Benchmarks
-Reproduce Figure 6 performance trends:
 ```bash
-mojo src/benchmark.mojo
+pixi run mojo src/benchmark.mojo
 ```
 
 ### Configuration
