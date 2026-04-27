@@ -57,17 +57,20 @@ struct ServiceRegistry:
         var content = f.read()
         f.close()
         
-        # Simple extraction logic
+        # Extraction logic: strip lines, find "service <Name> {" patterns
         var lines = String(content).split("\n")
         for i in range(len(lines)):
-            var line = lines[i]
-            if "service " in line:
-                var s_name = line.split(" ")[1]
-                # In this demo, we use default QoS from config headers
-                var qos = QoSMetadata(25.0, 1000.0, 0.99)
-                self.register(Service(String(s_name), "127.0.0.1", 8080 + i, i, qos))
+            var line = lines[i].strip()
+            # Match lines like "service PaymentService {" but skip top-level "services {"
+            if line.startswith("service ") and not line.startswith("services "):
+                var parts = line.split(" ")
+                if len(parts) >= 2:
+                    var s_name = parts[1]
+                    var qos = QoSMetadata(25.0, 1000.0, 0.99)
+                    self.register(Service(String(s_name), "127.0.0.1", 8080 + i, i, qos))
         
         print("FIRM [Registry]: Successfully parsed config file.")
+
 
     fn list_services(self):
         print("Registered Services:")

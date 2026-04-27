@@ -47,14 +47,49 @@ pixi shell
 ```
 
 ### Running the Demonstration
-Execute the main framework demonstration:
+Run the built-in demonstration that exercises all framework features:
 ```bash
-pixi run mojo main.mojo
+pixi run mojo main.mojo demo
+```
+
+### Listing Services
+List all services parsed from the config file:
+```bash
+pixi run mojo main.mojo list
+```
+
+### Service Composition (SDW)
+Compose and invoke user-specified services via the SDW workflow engine:
+```bash
+pixi run mojo main.mojo compose PaymentService InventoryService
+pixi run mojo main.mojo compose PaymentService --session my_session --timeout 1000
+```
+
+### MapReduce Orchestration
+Run a MapReduce job across specified worker services:
+```bash
+pixi run mojo main.mojo mapreduce PaymentService InventoryService MathNode --maps 5 --reduces 2 --job-name AnalyticsJob
 ```
 
 ### Running Benchmarks
 ```bash
 pixi run mojo benchmark.mojo
+```
+
+### CLI Options
+| Option | Description | Default |
+|---|---|---|
+| `--config <path>` | Path to services config file | `services.conf` |
+| `--timeout <ms>` | Invoker timeout in milliseconds | `500` |
+| `--qos-limit <ms>` | QoS latency limit in milliseconds | `100.0` |
+| `--session <id>` | Session ID for memoization | `session_0` |
+| `--maps <n>` | Number of map tasks (mapreduce only) | `3` |
+| `--reduces <n>` | Number of reduce tasks (mapreduce only) | `1` |
+| `--job-name <name>` | MapReduce job name | `UserJob` |
+
+For full usage help:
+```bash
+pixi run mojo main.mojo help
 ```
 
 ### Configuration
@@ -66,6 +101,7 @@ service PaymentService {
     threshold 100ms;
 }
 ```
+
 
 ## Research Context
 This implementation provides the functional building blocks for the FIRM framework, enabling researchers to validate service composition strategies in a high-performance, low-latency environment.

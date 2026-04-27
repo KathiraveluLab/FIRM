@@ -38,7 +38,7 @@ struct ServiceInvoker(ImplicitlyCopyable):
         
         # 5. Send (libc.send)
         # Using Int for pointer to bypass origin issues
-        var sent = external_call["send", Int, Int32, Int, Int, Int32](fd, Int(tx_buffer), tx_size, 0)
+        _ = external_call["send", Int, Int32, Int, Int, Int32](fd, Int(tx_buffer), tx_size, 0)
         
         # 6. Receive (libc.recv)
         var rx_buffer = alloc[UInt8](1024)

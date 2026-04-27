@@ -46,7 +46,7 @@ struct AMQPLiteFrame:
     fn unpack(buffer: UnsafePointer[UInt8, _], total_size: Int) -> AMQPLiteFrame:
         var type = buffer.load(0)
         var channel = (UInt16(buffer.load(1)) << 8) | UInt16(buffer.load(2))
-        var size = (UInt32(buffer.load(3)) << 24) | (UInt32(buffer.load(4)) << 16) | (UInt32(buffer.load(5)) << 8) | UInt32(buffer.load(6))
+        _ = (UInt32(buffer.load(3)) << 24) | (UInt32(buffer.load(4)) << 16) | (UInt32(buffer.load(5)) << 8) | UInt32(buffer.load(6))
         
         var p = String("Decoded AMQP Payload")
             
